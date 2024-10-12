@@ -97,7 +97,6 @@ public class Divirgance
             
             try
             {
-System.out.println(record);
                 directory = new File(record.getString("directory"));
                 database = (Database)Class.forName(record.getString("type")).newInstance();
                 

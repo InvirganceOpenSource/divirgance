@@ -32,68 +32,68 @@ import java.sql.*;
  */
 public class SQLIterator implements CloseableIterator<JSONObject>
 {
-        private final Connection connection;
-        private final ResultSet set;
-        
-        private boolean next;
-        private String[] columns;
+    private final Connection connection;
+    private final ResultSet set;
 
-        public SQLIterator(Connection connection, ResultSet set) throws SQLException
-        {
-            this.connection = connection;
-            this.set = set;
-            this.next = set.next();
-            
-            set.setFetchSize(1000);
-        }
+    private boolean next;
+    private String[] columns;
 
-        @Override
-        public boolean hasNext()
+    public SQLIterator(Connection connection, ResultSet set) throws SQLException
+    {
+        this.connection = connection;
+        this.set = set;
+        this.next = set.next();
+
+        set.setFetchSize(1000);
+    }
+
+    @Override
+    public boolean hasNext()
+    {
+        return next;
+    }
+
+    private void loadColumns(ResultSetMetaData meta) throws SQLException
+    {
+        columns = new String[meta.getColumnCount()];
+
+        for(int i=0; i<columns.length; i++)
         {
-            return next;
+            columns[i] = meta.getColumnLabel(i+1);
         }
-        
-        private void loadColumns(ResultSetMetaData meta) throws SQLException
+    }
+
+    @Override
+    public JSONObject next()
+    {
+        JSONObject result = new JSONObject(true);
+
+        try
         {
-            columns = new String[meta.getColumnCount()];
+            if(columns == null) loadColumns(set.getMetaData());
 
             for(int i=0; i<columns.length; i++)
             {
-                columns[i] = meta.getColumnLabel(i+1);
+                result.put(columns[i], set.getObject(i+1));
             }
+
+            this.next = set.next();
+
+            if(!next) close();
+
+            return result;
         }
-
-        @Override
-        public JSONObject next()
+        catch(SQLException e)
         {
-            JSONObject result = new JSONObject(true);
-            
-            try
-            {
-                if(columns == null) loadColumns(set.getMetaData());
-
-                for(int i=0; i<columns.length; i++)
-                {
-                    result.put(columns[i], set.getObject(i+1));
-                }
-                
-                this.next = set.next();
-                
-                if(!next) close();
-                
-                return result;
-            }
-            catch(SQLException e)
-            {
-                throw new ConvirganceException(e);
-            }
-        }
-
-        @Override
-        public void close() throws SQLException
-        {
-            try { set.close(); } catch(SQLException e) { e.printStackTrace(); }
-            
-            connection.close();
+            throw new ConvirganceException(e);
         }
     }
+
+    @Override
+    public void close() throws SQLException
+    {
+        try { set.close(); } catch(SQLException e) { e.printStackTrace(); }
+
+        connection.close();
+    }
+}
