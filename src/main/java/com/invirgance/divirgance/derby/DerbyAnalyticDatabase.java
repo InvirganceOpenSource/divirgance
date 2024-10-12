@@ -29,7 +29,6 @@ import com.invirgance.divirgance.Database;
 import com.invirgance.divirgance.Table;
 import java.io.*;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
@@ -91,13 +90,17 @@ public class DerbyAnalyticDatabase implements Database
         }
     }
     
-    private synchronized void loadConfig(File file) throws IOException
+    private synchronized void loadConfig(File file) throws ConvirganceException
     {
         try(FileInputStream in = new FileInputStream(file))
         {
             this.config = new JSONParser(new InputStreamReader(in)).parseObject();
             this.name = this.config.getString(name);
             this.directory = new File(this.config.getString("directory"));
+        }
+        catch(IOException e)
+        {
+            throw new ConvirganceException(e);
         }
     }
     
@@ -133,7 +136,7 @@ public class DerbyAnalyticDatabase implements Database
         saveConfig();
     }
     
-    public void load(File directory) throws IOException
+    public void load(File directory) throws ConvirganceException
     {
         loadConfig(new File(directory, "config.json"));
         initDriver(false);

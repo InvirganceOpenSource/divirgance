@@ -1,5 +1,8 @@
 package com.invirgance.divirgance;
 
+import com.invirgance.convirgance.ConvirganceException;
+import java.io.File;
+
 /*
  * Copyright 2024 INVIRGANCE LLC
 
@@ -29,4 +32,7 @@ SOFTWARE.
 public interface Database extends AutoCloseable
 {
     public String getName();
+    public void initialize(File directory) throws ConvirganceException;
+    public void load(File directory) throws ConvirganceException;
+    public Iterable<Table> getTables();
 }
