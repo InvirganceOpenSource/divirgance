@@ -21,7 +21,6 @@ SOFTWARE.
  */
 package com.invirgance.divirgance.sql;
 
-import com.invirgance.divirgance.Database;
 import com.invirgance.divirgance.Table;
 import java.sql.SQLException;
 
@@ -29,50 +28,83 @@ import java.sql.SQLException;
  *
  * @author jbanes
  */
-public class CreateTable implements SQLAction
+public class ColumnDefinition implements SQLAction
 {
-    private SQLParser.Token token;
-    private SQLAction action;
+    private SQLParser.Token name;
+    private SQLParser.Token type;
     
-    private Database database;
-    private String tableName;
+    private boolean open;
+    private Integer length1;
+    private Integer length2;
+    private boolean close;
     
-    private TableDefinition definition;
+    private Table table;
 
-    public CreateTable(SQLParser.Token token)
+    public ColumnDefinition(SQLParser.Token token)
     {
-        this.token = token;
-        this.database = token.getParser().getContext().getDatabase();
+        this.name = token;
     }
     
+    public boolean isOpen()
+    {
+        return (open && !close);
+    }
+
+    public Table getTable()
+    {
+        return table;
+    }
+
+    public void setTable(Table table)
+    {
+        this.table = table;
+    }
+
     @Override
     public SQLAction parseToken(SQLParser.Token token) throws SQLException
     {
-        if(this.tableName == null)
+        if(name == null)
         {
-            this.tableName = token.token;
-            
-            if(database.getTable(tableName) != null)
-            {
-                token.getParser().parseError("Table " + tableName + " already exists!");
-            }
-            
+            this.name = token;
             return this;
         }
         
-        if(token.token.equals("(") && definition == null)
+        if(type == null)
         {
-            definition = new TableDefinition(token);
-            
+            this.type = token;
             return this;
         }
         
-        if(definition != null && !definition.isClosed())
+        if(token.token.equals("(") && !open)
         {
-            return this.definition.parseToken(token);
+            open = true;
+            return this;
         }
         
-        token.getParser().parseError("Unknown token: " + token.token);
+        if(token.token.equals(")") && !close)
+        {
+            close = true;
+            return this;
+        }
+        
+        if(token.token.equals(",") && open && !close && length1 != null)
+        {
+            return this;
+        }
+        
+        if(open && !close && length1 == null)
+        {
+            length1 = Integer.valueOf(token.token);
+            return this;
+        }
+        
+        if(open && !close && length2 == null)
+        {
+            length2 = Integer.valueOf(token.token);
+            return this;
+        }
+        
+        token.getParser().parseError("Unexpected token: " + token.token);
         
         return null;
     }
@@ -80,13 +112,12 @@ public class CreateTable implements SQLAction
     @Override
     public void execute() throws SQLException
     {
-        Table table = this.database.createTable(this.tableName);
+        String type = this.type.token;
         
-        if(this.definition != null)
-        {
-            this.definition.setTable(table);
-            this.definition.execute();
-        }
+        if(length2 != null) type += "(" + length1 + "," + length2 + ")";
+        else if(length1 != null) type += "(" + length1 + ")";
+
+        table.addColumn(name.token, type);
     }
     
 }

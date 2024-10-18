@@ -35,6 +35,7 @@ public class SQLParser
     private static final int STATE_TOKEN = 1;
     private static final int STATE_IDENTIFIER = 2;
     private static final int STATE_STRING = 3;
+    private static final int STATE_OPERATOR = 4;
     
     private Token root;
     private SQLAction action;
@@ -92,6 +93,27 @@ public class SQLParser
                     
                     buffer.setLength(0);
                 }
+            }
+            else if("(),+.".indexOf(c) >= 0)
+            {
+                state = STATE_OPERATOR;
+                
+                if(buffer.length() > 0)
+                {
+                    token = new Token(buffer.toString(), last);
+                    action = parseToken(token);
+                    
+                    if(root == null) root = token;
+                    
+                    buffer.setLength(0);
+                }
+                
+                token = new Token(c + "", STATE_OPERATOR);
+                action = parseToken(token);
+
+                if(root == null) root = token;
+
+                buffer.setLength(0);
             }
             
             if(c == '\n')

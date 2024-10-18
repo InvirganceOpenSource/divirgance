@@ -168,9 +168,11 @@ public class DerbyAnalyticTable implements Table<JSONObject>
         new DBMS(source).update(new QueryOperation(query));
     }
     
+    @Override
     public void addColumn(String name, String type)
     {
-        Query query = new Query("alter table \"" + this.name + "\" add column \"col_" + name + "\" " + type + "(32672)");
+        String sql = "alter table \"" + this.name + "\" add column \"col_" + name + "\" " + type + (type.equalsIgnoreCase("varchar") ? "(32672)" : "");
+        Query query = new Query(sql);
         JSONObject record = new JSONObject();
         
         for(JSONObject column : (JSONArray<JSONObject>)this.config.getJSONArray("columns"))
@@ -180,7 +182,7 @@ public class DerbyAnalyticTable implements Table<JSONObject>
                 throw new ConvirganceException("Column " + name + " already exists in table " + this.name);
             }
         }
-        
+
         new DBMS(source).update(new QueryOperation(query));
         
         record.put("name", name);
@@ -190,5 +192,28 @@ public class DerbyAnalyticTable implements Table<JSONObject>
         this.config.getJSONArray("columns").add(record);
         
         saveConfig();
+    }
+    
+    public String[] getColumns()
+    {
+        String[] columns = new String[this.config.getJSONArray("columns").size()];
+        int index = 0;
+        
+        for(JSONObject column : (JSONArray<JSONObject>)this.config.getJSONArray("columns"))
+        {
+            columns[index++] = column.getString("name");
+        }
+        
+        return columns;
+    }
+    
+    public String getType(String name)
+    {
+        for(JSONObject column : (JSONArray<JSONObject>)this.config.getJSONArray("columns"))
+        {
+            if(column.getString("name").equalsIgnoreCase(name)) return column.getString("type");
+        }
+        
+        return null;
     }
 }

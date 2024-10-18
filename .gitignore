@@ -5,3 +5,4 @@ nb-configuration.xml
 nbactions.xml
 nbproject/*
 derby.log
+config.json

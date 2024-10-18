@@ -32,4 +32,7 @@ public interface Table<T> extends Iterable<T>
 {
     public String getName();
     public void insert(T record);
+    public void addColumn(String name, String type);
+    public String[] getColumns();
+    public String getType(String name);
 }

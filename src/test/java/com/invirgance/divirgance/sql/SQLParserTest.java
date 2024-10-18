@@ -61,10 +61,30 @@ public class SQLParserTest
         
         divirgance.addDatabase("test", database);
         parser.getContext().setDatabase(database);
-        
         parser.parse().execute();
         
         assertNotNull(database.getTable("Test"));
+        
+        parser = new SQLParser(divirgance, "create table Test2 ()");
+        
+        parser.getContext().setDatabase(database);
+        parser.parse().execute();
+        
+        assertNotNull(database.getTable("Test2"));
+        
+        parser = new SQLParser(divirgance, "create table Test3 (Column1 Integer, Column2 VARCHAR(64), Column3 NUMERIC(24,12))");
+        
+        parser.getContext().setDatabase(database);
+        parser.parse().execute();
+        
+        assertNotNull(database.getTable("Test3"));
+        assertEquals(3, database.getTable("Test3").getColumns().length);
+        assertEquals("Column1", database.getTable("Test3").getColumns()[0]);
+        assertEquals("Column2", database.getTable("Test3").getColumns()[1]);
+        assertEquals("Column3", database.getTable("Test3").getColumns()[2]);
+        assertEquals("Integer", database.getTable("Test3").getType("Column1"));
+        assertEquals("VARCHAR(64)", database.getTable("Test3").getType("Column2"));
+        assertEquals("NUMERIC(24,12)", database.getTable("Test3").getType("Column3"));
     }
     
 }
