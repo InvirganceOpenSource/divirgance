@@ -1,8 +1,3 @@
-package com.invirgance.divirgance;
-
-import com.invirgance.convirgance.ConvirganceException;
-import java.io.File;
-
 /*
  * Copyright 2024 INVIRGANCE LLC
 
@@ -24,18 +19,48 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 SOFTWARE.
  */
+package com.invirgance.divirgance.sql;
+
+import java.sql.SQLException;
 
 /**
  *
  * @author jbanes
  */
-public interface Database extends AutoCloseable
+public class Create implements SQLAction
 {
-    public String getName();
-    public void initialize(File directory) throws ConvirganceException;
-    public void load(File directory) throws ConvirganceException;
+    private SQLParser.Token token;
+    private SQLAction action;
+
+    public Create(SQLParser.Token token)
+    {
+        this.token = token;
+    }
     
-    public Table createTable(String name);
-    public Table getTable(String name);
-    public Iterable<Table> getTables();
+    @Override
+    public SQLAction parseToken(SQLParser.Token token) throws SQLException
+    {
+        if(this.action != null)
+        {
+            return this.action.parseToken(token);
+        }
+        
+        if(token.token.equalsIgnoreCase("table")) 
+        {
+            this.action = new CreateTable(token);
+            
+            return this.action;
+        }
+        
+        token.getParser().parseError("Unknown token: " + token.token);
+        
+        return null;
+    }
+
+    @Override
+    public void execute() throws SQLException
+    {
+        this.action.execute();
+    }
+    
 }

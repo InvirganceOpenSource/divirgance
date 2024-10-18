@@ -1,8 +1,3 @@
-package com.invirgance.divirgance;
-
-import com.invirgance.convirgance.ConvirganceException;
-import java.io.File;
-
 /*
  * Copyright 2024 INVIRGANCE LLC
 
@@ -24,18 +19,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 SOFTWARE.
  */
+package com.invirgance.divirgance.sql;
+
+import java.sql.SQLException;
 
 /**
  *
  * @author jbanes
  */
-public interface Database extends AutoCloseable
+public interface SQLAction
 {
-    public String getName();
-    public void initialize(File directory) throws ConvirganceException;
-    public void load(File directory) throws ConvirganceException;
-    
-    public Table createTable(String name);
-    public Table getTable(String name);
-    public Iterable<Table> getTables();
+    public SQLAction parseToken(SQLParser.Token token) throws SQLException;
+    public void execute() throws SQLException;
 }

@@ -1,8 +1,3 @@
-package com.invirgance.divirgance;
-
-import com.invirgance.convirgance.ConvirganceException;
-import java.io.File;
-
 /*
  * Copyright 2024 INVIRGANCE LLC
 
@@ -24,18 +19,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 SOFTWARE.
  */
+package com.invirgance.divirgance.sql;
+
+import com.invirgance.divirgance.Database;
+import com.invirgance.divirgance.Divirgance;
 
 /**
  *
  * @author jbanes
  */
-public interface Database extends AutoCloseable
+public class ExecutionContext
 {
-    public String getName();
-    public void initialize(File directory) throws ConvirganceException;
-    public void load(File directory) throws ConvirganceException;
+    private Divirgance divirgance;
+    private Database database;
+
+    public ExecutionContext(Divirgance divirgance)
+    {
+        this.divirgance = divirgance;
+    }
+
+    public Divirgance getDivirgance()
+    {
+        return divirgance;
+    }
     
-    public Table createTable(String name);
-    public Table getTable(String name);
-    public Iterable<Table> getTables();
+    public Database getDatabase()
+    {
+        return database;
+    }
+
+    public void setDatabase(Database database)
+    {
+        this.database = database;
+    }
 }
