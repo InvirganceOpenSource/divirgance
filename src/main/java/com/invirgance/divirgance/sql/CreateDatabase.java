@@ -21,18 +21,21 @@ SOFTWARE.
  */
 package com.invirgance.divirgance.sql;
 
+import com.invirgance.divirgance.Database;
+import com.invirgance.divirgance.Divirgance;
+import com.invirgance.divirgance.derby.DerbyAnalyticDatabase;
 import java.sql.SQLException;
 
 /**
  *
  * @author jbanes
  */
-public class Create implements SQLAction
+public class CreateDatabase implements SQLAction
 {
     private SQLParser.Token token;
-    private SQLAction action;
-
-    public Create(SQLParser.Token token)
+    private String databaseName;
+    
+    public CreateDatabase(SQLParser.Token token)
     {
         this.token = token;
     }
@@ -40,23 +43,19 @@ public class Create implements SQLAction
     @Override
     public SQLAction parseToken(SQLParser.Token token) throws SQLException
     {
-        if(this.action != null)
-        {
-            return this.action.parseToken(token);
-        }
+        Database database;
         
-        if(token.token.equalsIgnoreCase("table")) 
+        if(this.databaseName == null)
         {
-            this.action = new CreateTable(token);
+            this.databaseName = token.token;
+            database = token.getParser().getContext().getDivirgance().getDatabase(databaseName);
             
-            return this.action;
-        }
-        
-        if(token.token.equalsIgnoreCase("database")) 
-        {
-            this.action = new CreateDatabase(token);
+            if(database != null)
+            {
+                token.getParser().parseError("Database " + databaseName + " already exists!");
+            }
             
-            return this.action;
+            return this;
         }
         
         token.getParser().parseError("Unknown token: " + token.token);
@@ -67,7 +66,11 @@ public class Create implements SQLAction
     @Override
     public void execute() throws SQLException
     {
-        this.action.execute();
+        //TODO: Need to support other forms of database
+        Database database = new DerbyAnalyticDatabase();
+        Divirgance divirgance = token.getParser().getContext().getDivirgance();
+        
+        divirgance.addDatabase(databaseName, database);
     }
     
 }

@@ -56,15 +56,25 @@ public class SQLParserTest
         delete(directory);
         
         Divirgance divirgance = new Divirgance(directory);
-        Database database = new DerbyAnalyticDatabase();
-        SQLParser parser = new SQLParser(divirgance, "create table Test");
+        SQLParser parser = new SQLParser(divirgance, "create database testdb");
+        Database database;
         
-        divirgance.addDatabase("test", database);
+        // Create Database "testdb"
+        parser.parse().execute();
+
+        database = divirgance.getDatabase("testdb");
+
+        assertNotNull(database);
+
+        // Create Table "Test"
+        parser = new SQLParser(divirgance, "create table Test");
+        
         parser.getContext().setDatabase(database);
         parser.parse().execute();
         
         assertNotNull(database.getTable("Test"));
         
+        // Create Table "Test2"
         parser = new SQLParser(divirgance, "create table Test2 ()");
         
         parser.getContext().setDatabase(database);
@@ -72,6 +82,7 @@ public class SQLParserTest
         
         assertNotNull(database.getTable("Test2"));
         
+        // Create Table "Test3"
         parser = new SQLParser(divirgance, "create table Test3 (Column1 Integer, Column2 VARCHAR(64), Column3 NUMERIC(24,12))");
         
         parser.getContext().setDatabase(database);

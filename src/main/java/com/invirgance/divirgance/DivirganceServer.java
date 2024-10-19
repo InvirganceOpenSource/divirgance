@@ -27,9 +27,12 @@ import com.invirgance.convirgance.json.JSONObject;
 import com.invirgance.convirgance.output.BSONOutput;
 import com.invirgance.convirgance.output.OutputCursor;
 import com.invirgance.convirgance.target.OutputStreamTarget;
+import com.invirgance.divirgance.sql.SQLAction;
+import com.invirgance.divirgance.sql.SQLParser;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 
 /**
  *
@@ -38,12 +41,15 @@ import java.net.Socket;
 public class DivirganceServer implements Runnable
 {
     public static final int COMMAND_LIST = 0x01;
+    public static final int COMMAND_SQL_UPDATE = 0x02;
+    public static final int COMMAND_SQL_RESULT = 0x03;
     
     public static final int SUB_COMMAND_DATABASES = 0x01;
     public static final int SUB_COMMAND_TABLES = 0x02;
     
     private static final int RESPONSE_ERROR = 0xFF;
     private static final int RESPONSE_BSON = 0x01;
+    private static final int RESPONSE_COUNT = 0x02;
     
     private static Divirgance divirgance;
     private Socket socket;
@@ -116,6 +122,31 @@ public class DivirganceServer implements Runnable
         }
     }
     
+    public void executeUpdate(InputStream in, OutputStream out) throws IOException
+    {
+        DataInputStream data = new DataInputStream(in);
+        String sql = data.readUTF();
+        
+        SQLParser parser = new SQLParser(divirgance, sql);
+        SQLAction action;
+        
+        try
+        {
+            action = parser.parse();
+            
+            action.execute();
+            
+            out.write(RESPONSE_COUNT);
+            new DataOutputStream(out).writeLong(1L);
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+            
+            out.write(RESPONSE_ERROR);
+        }
+    }
+    
     public void serve(InputStream in, OutputStream out) throws IOException
     {
         int command;
@@ -130,6 +161,10 @@ public class DivirganceServer implements Runnable
             {
                 case COMMAND_LIST:
                     list(in, out);
+                    break;
+                    
+                case COMMAND_SQL_UPDATE:
+                    executeUpdate(in, out);
                     break;
                     
                 default:
