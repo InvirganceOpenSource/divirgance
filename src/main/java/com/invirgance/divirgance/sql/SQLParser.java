@@ -31,11 +31,11 @@ import java.util.ArrayList;
  */
 public class SQLParser
 {
-    private static final int STATE_WHITESPACE = 0;
-    private static final int STATE_TOKEN = 1;
-    private static final int STATE_IDENTIFIER = 2;
-    private static final int STATE_STRING = 3;
-    private static final int STATE_OPERATOR = 4;
+    public static final int STATE_WHITESPACE = 0;
+    public static final int STATE_TOKEN = 1;
+    public static final int STATE_IDENTIFIER = 2;
+    public static final int STATE_STRING = 3;
+    public static final int STATE_OPERATOR = 4;
     
     private Token root;
     private SQLAction action;
@@ -155,6 +155,7 @@ public class SQLParser
         if(token.type != STATE_TOKEN) parseError("SQL did not start with a token");
         
         if(token.token.equalsIgnoreCase("create")) return new Create(token);
+        if(token.token.equalsIgnoreCase("select")) return new Select(token);
         
         parseError("Unrecognized token " + token.token);
         
@@ -184,6 +185,11 @@ public class SQLParser
         public SQLParser getParser()
         {
             return SQLParser.this;
+        }
+        
+        public boolean is(String token)
+        {
+            return this.token.equalsIgnoreCase(token);
         }
     }
 }

@@ -98,4 +98,23 @@ public class SQLParserTest
         assertEquals("NUMERIC(24,12)", database.getTable("Test3").getType("Column3"));
     }
     
+    @Test
+    public void testSelect() throws Exception
+    {
+        File directory = new File("target/testing/sql/select");
+        
+        delete(directory);
+        
+        Divirgance divirgance = new Divirgance(directory);
+        SQLParser parser = new SQLParser(divirgance, "select Column1, Column2, Column3 from TestTable");
+        Database database = new DerbyAnalyticDatabase();
+        
+        divirgance.addDatabase("testdb", database);
+        database.createTable("TestTable");
+        database.getTable("TestTable").addColumn("Column1", "Integer");
+        database.getTable("TestTable").addColumn("Column2", "Integer");
+        database.getTable("TestTable").addColumn("Column3", "Integer");
+        
+        parser.parse();
+    }
 }
