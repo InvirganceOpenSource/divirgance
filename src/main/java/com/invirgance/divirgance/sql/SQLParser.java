@@ -94,7 +94,7 @@ public class SQLParser
                     buffer.setLength(0);
                 }
             }
-            else if("(),+.".indexOf(c) >= 0)
+            else if("(),+.*".indexOf(c) >= 0)
             {
                 state = STATE_OPERATOR;
                 

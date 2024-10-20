@@ -37,6 +37,11 @@ public class SelectColumn implements SQLAction
     {
         this.token = token;
     }
+    
+    public String getName()
+    {
+        return token.token;
+    }
 
     public String getResultName()
     {

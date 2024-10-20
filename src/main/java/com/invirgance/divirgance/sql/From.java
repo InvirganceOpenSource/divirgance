@@ -38,6 +38,23 @@ public class From implements SQLAction
         this.token = token;
     }
 
+    public SQLParser.Token getToken()
+    {
+        return token;
+    }
+
+    public String getTable()
+    {
+        return table.token;
+    }
+
+    public String getAlias()
+    {
+        if(alias == null) return table.token;
+        
+        return alias.token;
+    }
+
     @Override
     public SQLAction parseToken(SQLParser.Token token) throws SQLException
     {

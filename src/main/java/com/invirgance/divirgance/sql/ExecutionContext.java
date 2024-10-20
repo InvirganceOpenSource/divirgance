@@ -21,6 +21,7 @@ SOFTWARE.
  */
 package com.invirgance.divirgance.sql;
 
+import com.invirgance.convirgance.json.JSONObject;
 import com.invirgance.divirgance.Database;
 import com.invirgance.divirgance.Divirgance;
 
@@ -45,6 +46,15 @@ public class ExecutionContext
     
     public Database getDatabase()
     {
+        // Set a default database if none exists
+        if(database == null)
+        {
+            for(JSONObject config : divirgance.getDatabaseConfigs())
+            {
+                return divirgance.getDatabase(config.getString("name"));
+            }
+        }
+        
         return database;
     }
 

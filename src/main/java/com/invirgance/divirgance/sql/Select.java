@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class Select implements SQLAction
 {
     private SQLParser.Token token;
-    private SQLAction from;
+    private From from;
     
     private ArrayList<SelectColumn> columns = new ArrayList<>();
     private SelectColumn column;
@@ -39,6 +39,28 @@ public class Select implements SQLAction
     public Select(SQLParser.Token token)
     {
         this.token = token;
+    }
+
+    public SQLParser.Token getToken()
+    {
+        return token;
+    }
+    
+    public SelectColumn[] getColumns()
+    {
+        if(column != null)
+        {
+            columns.add(column);
+            
+            column = null;
+        }
+        
+        return this.columns.toArray(SelectColumn[]::new);
+    }
+    
+    public From getFrom()
+    {
+        return from;
     }
 
     @Override
